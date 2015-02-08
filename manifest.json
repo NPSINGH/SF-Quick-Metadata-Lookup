@@ -1,0 +1,34 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+  "name": "SF Quick Metadata Lookup",
+  "version": "1.1",
+  "manifest_version": 2,
+  "description": "SF Quick Metadata Lookup is an Advanced Metadata Searching Tool, you can search all metadata in quick manner.",
+  "author": "N.P.SINGH",
+  "options_page": "options.html",
+  "icons": { "48": "icon.png",
+          "128": "icon.png" },
+  "content_scripts": [
+    {
+      "matches": ["https://*.salesforce.com/*","https://*.visual.force.com/*"],
+	  "exclude_matches":["https://login.salesforce.com/*","https://test.salesforce.com/*","https://www.salesforce.com/*","https://developer.salesforce.com/*"],
+       "js": ["jquery.js","jquery-ui.js","contentScript.js","chosen.jquery.js"],
+	   "css": ["jquery-ui.css","chosen.css","custom.css"]
+    }
+  ],
+  "web_accessible_resources": [
+	"images/SFQuickFind.png",
+	"images/SFQuickFind48.png",
+	"images/arrow-left.png",
+	"images/arrow-right.png",
+	"images/SF_Icon.png",
+	"images/SF_Icon48.png",
+	"images/gearLoader.gif"
+  ],
+  "permissions": [
+     "cookies",
+	 "unlimitedStorage",
+	 "storage"
+  ]
+}
