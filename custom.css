@@ -1,0 +1,170 @@
+/* 
+	## ----   SF Quick Metadata Lookup   ---- ##
+	version : 1.1
+	Developed By : N.P.SINGH
+	
+	Copyright (c) 2015 N.P.SINGH
+	Under MIT License [2015]
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+/* Main CSS code for Extension Design and layout */
+
+.NPS-mainDialogBox{
+	display:block;
+	position:fixed;
+	top:25%;
+	left:-2px;
+	z-index:999;
+}
+.NPS-BoxHandler{
+	width:20px;
+	float:left;
+	padding-left:9px !important;
+	margin-left:-4px;
+	position:relative;
+	top:0;
+	background-color: #F6F6F6;
+	border-width: 4px;
+	border-color: #fff;
+	padding: 7px 0;
+	padding-right: 2px;
+	text-align: left;
+	color: white;
+	-moz-box-shadow: -2px 0 2px #a0a6ab;
+	z-index: 10;
+	border-style: solid solid solid none;
+	border-top-left-radius: 0px;
+	border-bottom-left-radius: 0px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+	box-shadow: rgb(160, 166, 171) 4px 2px 5px;
+}
+.NPS-dialogeBodyContainer{
+	position: absolute;
+	float:left;
+	left: -520px;
+	top: 0;
+	width: 500px;
+	/*height:100px;*/
+	background-color: #F6F6F6;
+	border: 4px solid #fff;
+	padding: 6px;
+	padding-top: 3px;
+	margin: 0;
+	border-bottom-radius-left: 5px;
+	-moz-box-shadow: 0 0 2px #a0a6ab;
+	-webkit-box-shadow: 0 0 2px #a0a6ab;
+	z-index: 9;
+	box-shadow: rgb(160, 166, 171) 4px 2px 5px;
+}
+.NPS-bodyHeader{
+	height: 26px;
+	border-bottom: solid rgb(169, 169, 169) 1px;
+	padding-left: 20px;	
+}
+.NPS-headerMainText{
+	font-family: Open Sans;
+	font-size: 16px;
+	margin-left: 15%;
+	vertical-align: super;
+	color: #B6B2B2;
+	text-shadow: #D5D5D5 2px 2px 2px;
+}
+.NPS-headerSmallText{
+	font-family: Open Sans;
+	font-size: 9px;
+	margin-left: 2%;
+	color:#CAC4C4;
+	vertical-align:text-top;
+}
+.NPS-bodyFooterContent{
+	border-top: solid rgb(169, 169, 169) 1px;
+	height: 20px;
+	padding-left:20px;	
+}
+.NPS-footerText{
+	font-family: Open Sans;
+	font-size: 11px;
+	margin-left: 25%;
+	color:##C0C0C0;
+	vertical-align:super;
+}
+span.NPS-footerText a {
+color: #D7D7D7;
+}
+span.NPS-footerText a:hover {
+color: #5A5A5A;
+}
+.NPS-bodyMiddleContent{
+	/*height:60px;*/ 
+	padding-left:20px;
+}
+.NPS-formBodySection fieldset.NPS-customFieldSet {
+	border: 1px solid #eee;
+	border-radius: 5px;
+	margin-bottom: 10px;
+	margin-top: 5px;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top:5px;
+	padding-bottom:5px;
+}
+.NPS-formBodySection fieldset.NPS-customFieldSet legend{
+	font-weight: 400;
+	color: rgb(144, 144, 144);
+	font-family: Open Sans;
+	font-size: 13px;
+}
+.NPS-formBodySection label {
+	font-family: Open Sans;
+	font-size:11px;
+	color:#696262;
+	margin-right:15px;
+}
+.NPS-formBodySection input[type="radio"]{
+	vertical-align: text-bottom;
+	height:12px;
+}
+.NPS-formBodySection fieldset.NPS-customFieldSet select{
+	width: 180px;
+	height: 18px;
+	font-size: 11px;
+	font-family: Open Sans;
+}
+.chosen-container-single .chosen-single{
+	background: #FFF !important;
+	border-radius: 0px !important;
+	font-family: Open Sans !important;
+}
+.chosen-results{
+	max-height:150px !important;
+	font-family: Open Sans !important;
+}
+div.chosen-container{
+	width:400px !important;
+}
+div.NPS-showProgressBar{
+	width: 480px;
+	position: absolute;
+	top: 31px;
+	height: 192px;
+	background-color: #F5F5F5;
+	opacity: 0.8;
+}
+div.NPS-innerImageProgressBarContainer{
+	margin-left: 40%;
+	margin-top: 10%;
+	color: #181818;
+	font-size: 14px;
+	font-weight: bolder;
+	text-shadow: #868686 2px 0px 3px;
+	font-family: Open Sans;
+}
