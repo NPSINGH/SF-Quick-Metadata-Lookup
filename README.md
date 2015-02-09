@@ -2,7 +2,7 @@
 -------------------------------------
 Version: 1.2
 Copyright (c) N.P.SINGH 2015 | Under MIT License
-
+Get the Extension from Chrome: https://chrome.google.com/webstore/detail/sf-quick-metadata-lookup/mokggpplcgmpaoijfndagjbgfkibbcke?hl=en-US&gl=IN
 ========================================================
 Refined version 1.2    |          Modified Date: Feb 10, 2015
 ========================================================
