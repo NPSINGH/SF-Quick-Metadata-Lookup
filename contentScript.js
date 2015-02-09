@@ -15,6 +15,7 @@
 	SOFTWARE.
 */
 /* Main Content Script file to render the extension on the page */
+
 $('head').append('<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css"/>');
 
 var pkgInfoReady = false;
@@ -67,7 +68,7 @@ var G_SearchForLabel = {
 	function getPageVisibility(){
 		chrome.storage.sync.get("PAGEVISIBILITY", function(obj){
 			G_PAGE = obj["PAGEVISIBILITY"];
-			console.log('@@@G_PAGE'+G_PAGE);
+			console.log('SF Quick MetaData Lookup Extension Visibility: '+G_PAGE);
 		});
 	}
 	
@@ -158,22 +159,52 @@ $(document).ready(function(){
 			clearInterval(pkgTimerCounter);
 			return;
 		}
-		var pkginfo = [];
-		pkginfo = fetchPackageInformation();
-		if(pkginfo.length > 0){
-			var displayData = '<option value="none">--Select--</option>';
-			for(var i in pkginfo){
-				displayData += '<option value="'+pkginfo[i].id+'">'+pkginfo[i].value+'</option>';
+		else{
+			var pkginfo = [];
+			pkginfo = fetchPackageInformation();
+			if(pkginfo.length > 0){
+				var displayData = '<option value="none">--Select--</option>';
+				for(var i in pkginfo){
+					displayData += '<option value="'+pkginfo[i].id+'">'+pkginfo[i].value+'</option>';
+				}
+				$('#packageFilter').empty();
+				$('#packageFilter').append(displayData);			
+				$('.NPS-showProgressBar').hide();
+				clearInterval(pkgTimerCounter);
 			}
-			$('#packageFilter').empty();
-		    $('#packageFilter').append(displayData);			
-			$('.NPS-showProgressBar').hide();
-			clearInterval(pkgTimerCounter);
+			else{
+				var displayData = '<option value="none">--Select--</option>';
+				$('#packageFilter').empty();
+				$('#packageFilter').append(displayData);			
+				$('.NPS-showProgressBar').hide();
+			}
+		}
+	},300);
+	
+	
+	var initialPageCounter = setInterval(function(){
+		if(G_PAGE != '' && G_PAGE != 'DEFAULT'){			
+			if(((window.location.href).toLowerCase()).indexOf(G_PAGE) > -1){
+				//console.log('inside this');
+				//console.log('G_PAGE'+G_PAGE);
+				$('div.NPS-mainDialogBox').show();
+				clearInterval(initialPageCounter);
+			}		    	
+		}
+		else{
+			$('div.NPS-mainDialogBox').show();
+			clearInterval(initialPageCounter);
 		}
 	},300);
 	
 	$('#resultSelectList').chosen();
-   
+   //fetchPackageInformation();
+  // getsObjMetadataInfo();
+   //featchCustomObjects();
+   //getsToolingObjMetadataInfo();
+  // featchApexClassFromTooling();
+ // fetchPageFromTooling();
+ // $('#packageFilter').chosen();
  setTimeout(function(){G_PkgFilter = $('div.NPS-formBodySection > fieldset[criteria=SearchBy] > select#packageFilter').val();},1000)
 	
 
@@ -406,12 +437,13 @@ $(document).on('click','.NPS-BoxHandler',function(){
 							finalList.push(obj);
 						}					
 				}				
-				//console.log('##FINALLLLLLLObjects--> '+JSON.stringify(finalList));
-				
+				console.log('##FINALLLLLLLObjects--> '+JSON.stringify(finalList));
+				console.log('##parentObject--> '+JSON.stringify(parentObject));
 				for(var p in parentObject){
 					if(parentObject[p].isCustom == true){
 						for(var c in finalList){
 							if((parentObject[p].name).trim() == (finalList[c].Name).trim()){
+							
 								var obj = {
 									name : parentObject[p].name,
 									label : parentObject[p].label,
@@ -420,6 +452,7 @@ $(document).on('click','.NPS-BoxHandler',function(){
 									isCustom: true,
 									url : 'https://'+window.location.host+'/'+finalList[c].Id
 								}
+								console.log('Obj:--> '+obj);
 								FinalObjectMetaDataList.push(obj);
 							}
 						}
@@ -429,14 +462,14 @@ $(document).on('click','.NPS-BoxHandler',function(){
 							name : parentObject[p].name,
 							label : parentObject[p].label,
 							namespacePrefix : parentObject[p].namespacePrefix,
-							id : finalList[c].Id,
+							id : parentObject[p].name,
 							isCustom: false,
 							url : 'https://'+window.location.host+'/ui/setup/Setup?setupid='+parentObject[p].name
 						}
 						FinalObjectMetaDataList.push(obj);
 					}
 				}
-				//console.log('###finalObjects--> '+JSON.stringify(FinalObjectMetaDataList));
+				console.log('###finalObjects--> '+JSON.stringify(FinalObjectMetaDataList));
 				localStorage.setItem(orgId+'_sObjectDate', currentDate);
 				localStorage.setItem(orgId+'_sObjectInfo', JSON.stringify(FinalObjectMetaDataList));
 				
@@ -556,6 +589,7 @@ $(document).on('click','.NPS-BoxHandler',function(){
 	  
 	 //var myMetadataCounter = setInterval(function(){
 		var getMetaDataInfo = [];
+		//console.log(G_SearchFor + ' ###### ' +G_PkgFilter);
 		getMetaDataInfo = fetchMetaDataObjFromTooling(G_SearchFor,G_PkgFilter);
 		if(getMetaDataInfo.length > 0){
 			/*var prefixArry = [];
@@ -634,6 +668,15 @@ $(document).on('click','.NPS-BoxHandler',function(){
 			$('div#NPS-resultSelectContainer > #resultSelectList').chosen();
 			
 		}
+		else{
+			displayData = '<select data-placeholder="No Data Found for '+G_SearchForLabel[G_SearchFor]+'" id="resultSelectList">';
+			displayData += '<option></option>';
+			displayData += '</select>';
+			$('div#NPS-resultSelectContainer').empty();
+			$('div#NPS-resultSelectContainer').append(displayData);
+			$('.NPS-showProgressBar').hide();
+			$('div#NPS-resultSelectContainer > #resultSelectList').chosen();
+		}
 		
 		//console.log('count--> '+count);
 		count ++;	
@@ -689,6 +732,7 @@ $(document).on('click','.NPS-BoxHandler',function(){
 				headers : {"Authorization": "Bearer "+ sessionCookie},
 				contentType : "application/json"
 			}).done(function(response){
+				//console.log('PRIMARY DATA--> '+JSON.stringify(response));
 				for(var i in response.records){
 					//if(response.records[i].NamespacePrefix != 'sf_com_apps' && response.records[i].NamespacePrefix != 'sf_chttr_apps'){
 						var obj = {
@@ -813,6 +857,7 @@ $(document).on('click','.NPS-BoxHandler',function(){
 			//console.log('####queryURL '+ queryURL);
 			$.ajax({
 				url : "https://"+currentDomain+queryURL,
+				async: false,
 				headers : {"Authorization": "Bearer "+ sessionCookie},
 				contentType : "application/json"
 			}).done(function(response){
@@ -827,23 +872,24 @@ $(document).on('click','.NPS-BoxHandler',function(){
 				}
 				var apttusPackage = {'Apttus':'Apttus Contract Management','Apttus_Proposal':'Apttus Proposal Management','Apttus_Config2':'Apttus Configuration & Pricing','Apttus_QPConfig':'Apttus Quote/Proposal-Configuration Integration','Apttus_Approval':'Apttus Approvals Management','Apttus_QPApprov':'Apttus Quote/Proposal Approvals Management','Apttus_Echosign':'Apttus Echosign Integration','Apttus_CMConfig':'Apttus Contract-Configuration Integration','Apttus_QPComply':'Apttus Quote/Proposal-Contract Integration','Apttus_Collab':'Apttus X-Author For Chatter','Apttus_QPAsset':'Apttus Quote/Proposal-Asset Integration','Apttus_QPAsset':'Apttus Quote/Proposal-Asset Integration','Apttus_CPQApi':'Apttus CPQ Api','Apttus_DealMgr':'Apttus Deal Manager','Apttus_DealOpti':'Apttus Deal Maximizer','Apttus_DLApprov':'Apttus Deal Approvals Management','Apttus_CQApprov':'Apttus CPQ Approvals Management','Apttus_CPQOpti':'Apttus CPQ Maximizer','Apttus_DocuApi':'Apttus DocuSign Api','Apttus_CMDSign':'Apttus Contract DocuSign Integration','Apttus_XApps':'Apttus X-Author For Excel','Apttus_CUApprov':'Apttus Custom Approvals Management','Apttus_XAppsDS':'Apttus X-Author Designer For Excel'};
 				
-				for(var key in finalList){
-					if(finalList[key].Id in apttusPackage){
-						var pkg = {
-							value: apttusPackage[finalList[key].Id],
-							id: finalList[key].Id
-						};
-						packageWrap.push(pkg);	
-					}
-					else{
-						var pkg = {
-							value: finalList[key].Id,
-							id: finalList[key].Id
-						};
-						packageWrap.push(pkg)
+				if(finalList.length > 0){
+					for(var key in finalList){
+						if(finalList[key].Id in apttusPackage){
+							var pkg = {
+								value: apttusPackage[finalList[key].Id],
+								id: finalList[key].Id
+							};
+							packageWrap.push(pkg);	
+						}
+						else{
+							var pkg = {
+								value: finalList[key].Id,
+								id: finalList[key].Id
+							};
+							packageWrap.push(pkg)
+						}
 					}
 				}
-				
 				
 				localStorage.setItem(orgId+'_packageDate', currentDate);
 				localStorage.setItem(orgId+'_packageInfo', JSON.stringify(packageWrap));
@@ -853,9 +899,9 @@ $(document).on('click','.NPS-BoxHandler',function(){
 					param = response.nextRecordsUrl;
 				}
 				
-			}).fail(function(error){				
-				alert('Error!! Unable to fetch data from your salesforce instance' + JSON.stringify(error));
+			}).fail(function(error){
 				G_ErrorOccured = true;
+				console.log('SF Quick Meatadata Lookup Error!! Unable to fetch data from your salesforce instance' + JSON.stringify(error));				
 				continueLooping = false;
 			});
 	}
