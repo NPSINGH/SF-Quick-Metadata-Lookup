@@ -1,6 +1,6 @@
 /* 
 	## ----   SF Quick Metadata Lookup   ---- ##
-	version : 1.1
+	version : 1.2
 	Developed By : N.P.SINGH
 	
 	Copyright (c) 2015 N.P.SINGH
@@ -15,7 +15,6 @@
 	SOFTWARE.
 */
 /* Main Content Script file to render the extension on the page */
-
 $('head').append('<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css"/>');
 
 var pkgInfoReady = false;
@@ -183,7 +182,7 @@ $(document).ready(function(){
 	
 	
 	var initialPageCounter = setInterval(function(){
-		if(G_PAGE != '' && G_PAGE != 'DEFAULT'){			
+		if(G_PAGE != '' && G_PAGE != 'DEFAULT' && G_PAGE != undefined){			
 			if(((window.location.href).toLowerCase()).indexOf(G_PAGE) > -1){
 				//console.log('inside this');
 				//console.log('G_PAGE'+G_PAGE);
