@@ -36,7 +36,7 @@ Following issues/improvments has been implemented in this version:
 * Users can be searchable.
 * Searching behaviour provided with two searching criteria **Contains** and **Starts With**.
 * App filteration refined with some more iterations.
-* Limit the extension visibility on other salesforce type domaims.
+* Limit the extension visibility on other salesforce type domains.
 * Extension size has been reduced by 40%.
 
 **Fixes**
