@@ -26,7 +26,7 @@ SF Quick Metadata Lookup is an Advanced Metadata Searching Tool, you can search 
 * Configuration of Data refreshment rate.
 * Configuration of Searching behaviour like ("Start With" OR "Contains")
 
-========================================================
+---------------------------------
 ###Refined version 1.3    |          Modified Date: Feb 26, 2015
 
 Following issues/improvments has been implemented in this version:
