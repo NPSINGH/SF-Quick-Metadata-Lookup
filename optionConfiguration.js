@@ -1,6 +1,6 @@
 /* 
 	## ----   SF Quick Metadata Lookup   ---- ##
-	version : 1.1
+	version : 1.3
 	Developed By : N.P.SINGH
 	
 	Copyright (c) 2015 N.P.SINGH
@@ -17,20 +17,23 @@
 
 /* Option Configuration page Scripting logic */
 
-
 var G_PAGE = '';
 var G_run = false;
+var G_SearchCriteria = '';
 function getPagefromStroage(){
 chrome.storage.sync.get("PAGEVISIBILITY", function(obj){
 	G_PAGE = obj["PAGEVISIBILITY"];
 });
+chrome.storage.sync.get("DATASEARCHCRITERIA", function(obj){
+	G_SearchCriteria = obj["DATASEARCHCRITERIA"];
+})
 }
 var initialTimer = setInterval(function(){
 	if(G_run == false){
 		getPagefromStroage();
 		G_run = true;
 	}
-	if(G_PAGE != ''){
+	if(G_PAGE != '' && G_SearchCriteria != ''){
 	  var setRadio = '';
 	  var text = '';
 		if(G_PAGE.indexOf('.salesforce.com') > -1){
@@ -57,6 +60,16 @@ var initialTimer = setInterval(function(){
 				$(this).prop('checked',false);
 			}
 		});	
+		
+		$('input[name=SerachCriteriaRadio]').each(function(){
+			if($(this).attr('id') == G_SearchCriteria){
+				$(this).prop('checked',true);
+			}
+			else{
+				$(this).prop('checked',false);
+			}
+		});
+		
 		$('div.loadingImg').hide();
 		clearInterval(initialTimer);
 	}
@@ -69,6 +82,15 @@ $('div.loadingImg').hide();
 
 function parseCustomPageUrl(page){
 	chrome.storage.sync.set({"PAGEVISIBILITY": page}, function(){
+		//$('div.loadingImg').hide();
+		//alert('Your configuration has been saved.');
+		saveSearchCriteria(); // Call the next Callout function for saving Search Criteria
+	});
+}
+
+function saveSearchCriteria(){
+	var searchCriteria = $('input[name=SerachCriteriaRadio]:checked').val();
+	chrome.storage.sync.set({"DATASEARCHCRITERIA": searchCriteria}, function(){
 		$('div.loadingImg').hide();
 		alert('Your configuration has been saved.');
 		
