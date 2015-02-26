@@ -1,6 +1,6 @@
 /* 
 	## ----   SF Quick Metadata Lookup   ---- ##
-	version : 1.2
+	version : 1.3
 	Developed By : N.P.SINGH
 	
 	Copyright (c) 2015 N.P.SINGH
@@ -31,7 +31,9 @@ var G_orgId = getCookie('sid').substring(0, 15);
 var G_sessionId;
 var G_ErrorOccured = false;
 var G_PAGE = '';
+var G_SearchCriteria = '';
 getPageVisibility();
+getSearchCriteria();
 if((window.location.href).indexOf('.visual.force.com') > 0){
 	getSessionId();
 	//G_sessionId = localStorage.getItem(G_orgId+'_sessionId');
@@ -47,7 +49,9 @@ var G_SearchForLabel = {
 	ApexTrigger : 'Triggers',
 	ApexComponent : 'VF Components',
 	CustomObj : 'Standard/Custom Objects',
-	StaticResource : 'Static Resources'
+	StaticResource : 'Static Resources',
+	User : 'Users',
+	CustomSetting : 'Custom Settings'
 };
 	function setSessionId(sid) {    
 		chrome.storage.sync.set({"SFQUICKSESSIONID": sid}, function(){
@@ -67,7 +71,27 @@ var G_SearchForLabel = {
 	function getPageVisibility(){
 		chrome.storage.sync.get("PAGEVISIBILITY", function(obj){
 			G_PAGE = obj["PAGEVISIBILITY"];
-			console.log('SF Quick MetaData Lookup Extension Visibility: '+G_PAGE);
+			var displayVisibility;
+			if(G_PAGE == undefined){
+				 displayVisibility = 'Default';
+			}
+			else{
+				displayVisibility = G_PAGE;
+			}
+			console.log('SF Quick MetaData Lookup Extension Visibility: '+displayVisibility);
+		});
+	}
+	function getSearchCriteria(){
+		chrome.storage.sync.get("DATASEARCHCRITERIA", function(obj){
+			G_SearchCriteria = obj["DATASEARCHCRITERIA"];
+			var displayVisibility;
+			if(G_SearchCriteria == undefined){
+				 displayVisibility = 'Contains';
+			}
+			else{
+				displayVisibility = G_SearchCriteria;
+			}
+			console.log('SF Quick MetaData Lookup Extension Search Criteria: '+displayVisibility);
 		});
 	}
 	
@@ -90,7 +114,7 @@ $(document).ready(function(){
 									'<div class="NPS-bodyHeader">'+
 										'<img style="width:5%;" src="'+chrome.extension.getURL("images/SF_Icon.png")+'"/>'+
 										'<span class="NPS-headerMainText">SF Quick Metadata Lookup</span>'+
-										'<span class="NPS-headerSmallText">Version: 1.1</span>'+
+										'<span class="NPS-headerSmallText">Version: 1.3</span>'+
 									'</div>'+
 									'<div class="NPS-bodyMiddleContent">'+
 										'<div class="NPS-formBodySection">'+											
@@ -107,8 +131,12 @@ $(document).ready(function(){
 												'<br/>'+
 												'<input type="radio" class="NPS-radioCustomStyle" data-selector="SearchFor" value="CustomObj" id="CustomObj"/>'+
 												'<label for="CustomObj">Custom Object</label>'+
+												'<input type="radio" class="NPS-radioCustomStyle" data-selector="SearchFor" value="CustomSetting" id="CustomSetting"/>'+
+												'<label for="CustomSetting">Custom Setting</label>'+
 												'<input type="radio" class="NPS-radioCustomStyle" data-selector="SearchFor" value="StaticResource" id="StaticResource"/>'+
-												'<label for="StaticResource">Static Resource</label>'+												
+												'<label for="StaticResource">Static Resource</label>'+	
+												'<input type="radio" class="NPS-radioCustomStyle" data-selector="SearchFor" value="User" id="User"/>'+
+												'<label for="User">User</label>'+												
 											'</fieldset>'+
 											'<fieldset class="NPS-customFieldSet" criteria="SearchBy">'+
 												'<legend>Search By</legend>'+
@@ -196,18 +224,29 @@ $(document).ready(function(){
 		}
 	},300);
 	
-	$('#resultSelectList').chosen();
+	//$('#resultSelectList').chosen({search_contains: true});
+	initializeChosenPlugin();
    //fetchPackageInformation();
   // getsObjMetadataInfo();
    //featchCustomObjects();
    //getsToolingObjMetadataInfo();
   // featchApexClassFromTooling();
  // fetchPageFromTooling();
- // $('#packageFilter').chosen();
- setTimeout(function(){G_PkgFilter = $('div.NPS-formBodySection > fieldset[criteria=SearchBy] > select#packageFilter').val();},1000)
-	
+ // $('#packageFilter').chosen({search_contains: true});
+ setTimeout(function(){G_PkgFilter = $('div.NPS-formBodySection > fieldset[criteria=SearchBy] > select#packageFilter').val();},1000)	
 
 });
+
+function initializeChosenPlugin(){
+	if(G_SearchCriteria == 'STARTWITH'){
+		$('div#NPS-resultSelectContainer > #resultSelectList').chosen();
+	}
+	else{
+		$('div#NPS-resultSelectContainer > #resultSelectList').chosen({search_contains: true});
+	}
+}
+
+
 
 $(document).on('change','div.NPS-formBodySection input[type=radio]',function(){
 	var selected = $(this).attr('id');
@@ -229,19 +268,27 @@ $(document).on('change','div.NPS-formBodySection input[type=radio]',function(){
 				$(this).attr('disabled',true);
 			}
 		});
+		$('div.NPS-formBodySection > fieldset[criteria=SearchBy] > select#packageFilter').removeAttr('disabled');
+	}
+	else if (G_SearchFor == 'User'){
+		$('input[data-selector=SearchBy]').each(function(){
+			$(this).attr('disabled',true);
+		});
+		$('div.NPS-formBodySection > fieldset[criteria=SearchBy] > select#packageFilter').attr('disabled','true');
 	}
 	else{
 		$('input[data-selector=SearchBy]').each(function(){
 			$(this).attr('disabled',false);
 		});
+		$('div.NPS-formBodySection > fieldset[criteria=SearchBy] > select#packageFilter').removeAttr('disabled');
 	}
 	G_SearchBy = $('div.NPS-formBodySection > fieldset[criteria=SearchBy] > input[type=radio]:checked').attr('id');
 	G_PkgFilter = $('div.NPS-formBodySection > fieldset[criteria=SearchBy] > select#packageFilter').val();
 	if(G_SearchFor != null && G_SearchFor != ''){
 		$('.NPS-showProgressBar').show();
 		setTimeout(function(){
-			if(G_SearchFor == 'CustomObj'){
-				// Call function that can build the Custom Object Search List
+			if(G_SearchFor == 'CustomObj' || G_SearchFor == 'CustomSetting'){
+				// Call function that can build the Custom Object or Custom Setting Search List
 				getsObjectMetadata();
 			}
 			else{
@@ -260,7 +307,7 @@ $(document).on('change','div.NPS-formBodySection select#packageFilter',function(
 	if(G_SearchFor != null && G_SearchFor != ''){
 		$('.NPS-showProgressBar').show();
 		setTimeout(function(){
-			if(G_SearchFor == 'CustomObj'){
+			if(G_SearchFor == 'CustomObj' || G_SearchFor == 'CustomSetting'){
 				// Call function that can build the Custom Object Search List
 				getsObjectMetadata();
 			}
@@ -332,37 +379,69 @@ $(document).on('click','.NPS-BoxHandler',function(){
 			//console.log('####generalMetadataResponse.sobjects'+JSON.stringify(generalMetadataResponse.sobjects));
 			for (var i = 0; i < generalMetadataResponse.sobjects.length; i++){
 				if (generalMetadataResponse.sobjects[i].layoutable != false || generalMetadataResponse.sobjects[i].triggerable != false){
-					var objtype = ((generalMetadataResponse.sobjects[i].name).match(/__/g) || []).length;
-					if(objtype > 1){
-						var obj= {
-							name : generalMetadataResponse.sobjects[i].name,
-							label: generalMetadataResponse.sobjects[i].label,
-							namespacePrefix: (generalMetadataResponse.sobjects[i].name).substr(0,(generalMetadataResponse.sobjects[i].name).indexOf('__')),
-							o_id : generalMetadataResponse.sobjects[i].Id,
-							isCustom: true
+					
+						var objtype = ((generalMetadataResponse.sobjects[i].name).match(/__/g) || []).length;
+						if(objtype > 1){
+							if(generalMetadataResponse.sobjects[i].customSetting == true){
+								var obj= {
+									name : generalMetadataResponse.sobjects[i].name,
+									label: generalMetadataResponse.sobjects[i].label,
+									namespacePrefix: (generalMetadataResponse.sobjects[i].name).substr(0,(generalMetadataResponse.sobjects[i].name).indexOf('__')),
+									o_id : generalMetadataResponse.sobjects[i].Id,
+									isCustom: true,
+									isCustomSetting: true
+									
+								}
+								ALLSObjectList.push(obj);
+							}
+							else{
+								var obj= {
+									name : generalMetadataResponse.sobjects[i].name,
+									label: generalMetadataResponse.sobjects[i].label,
+									namespacePrefix: (generalMetadataResponse.sobjects[i].name).substr(0,(generalMetadataResponse.sobjects[i].name).indexOf('__')),
+									o_id : generalMetadataResponse.sobjects[i].Id,
+									isCustom: true,
+									isCustomSetting: false									
+								}
+								ALLSObjectList.push(obj);
+							}
 						}
-						ALLSObjectList.push(obj);
-					}
-					else if(objtype <= 1 && objtype > 0){
-						var obj= {
-							name : generalMetadataResponse.sobjects[i].name,
-							label: generalMetadataResponse.sobjects[i].label,
-							namespacePrefix: null,
-							o_id : generalMetadataResponse.sobjects[i].id,
-							isCustom: true
+						else if(objtype <= 1 && objtype > 0){
+							if(generalMetadataResponse.sobjects[i].customSetting == true){
+								var obj= {
+									name : generalMetadataResponse.sobjects[i].name,
+									label: generalMetadataResponse.sobjects[i].label,
+									namespacePrefix: null,
+									o_id : generalMetadataResponse.sobjects[i].id,
+									isCustom: true,
+									isCustomSetting: true
+								}
+								ALLSObjectList.push(obj);
+							}
+							else{
+								var obj= {
+									name : generalMetadataResponse.sobjects[i].name,
+									label: generalMetadataResponse.sobjects[i].label,
+									namespacePrefix: null,
+									o_id : generalMetadataResponse.sobjects[i].id,
+									isCustom: true,
+									isCustomSetting: false
+								}
+								ALLSObjectList.push(obj);
+							}
 						}
-						ALLSObjectList.push(obj);
-					}
-					else{
-						var obj= {
-							name : generalMetadataResponse.sobjects[i].name,
-							label: generalMetadataResponse.sobjects[i].label,
-							namespacePrefix: null,
-							o_id : generalMetadataResponse.sobjects[i].id,
-							isCustom: false
+						else{
+							var obj= {
+								name : generalMetadataResponse.sobjects[i].name,
+								label: generalMetadataResponse.sobjects[i].label,
+								namespacePrefix: null,
+								o_id : generalMetadataResponse.sobjects[i].id,
+								isCustom: false,
+								isCustomSetting: false
+							}
+							ALLSObjectList.push(obj);
 						}
-						ALLSObjectList.push(obj);
-					}
+										
 				}			
 			}		
 			//console.log('###ALLSObjectList '+ JSON.stringify(ALLSObjectList));
@@ -380,6 +459,7 @@ $(document).on('click','.NPS-BoxHandler',function(){
  // function for preparing Object List Data[final]
  function featchCustomObjects(parentObject){
 	var FinalObjectMetaDataList = [];
+	var myCustomSettingObj = [];
   if (parentObject != null && parentObject.length > 0){
 		var sessionCookie;
 		var orgId =  G_orgId;
@@ -414,6 +494,7 @@ $(document).on('click','.NPS-BoxHandler',function(){
 				headers : {"Authorization": "Bearer "+ sessionCookie},
 				contentType : "application/json"
 			}).done(function(response){
+				//console.log('++++++records '+JSON.stringify(response));
 				for(var i in response.records){
 						if(response.records[i].NamespacePrefix != null){
 							var obj = {
@@ -436,8 +517,8 @@ $(document).on('click','.NPS-BoxHandler',function(){
 							finalList.push(obj);
 						}					
 				}				
-				console.log('##FINALLLLLLLObjects--> '+JSON.stringify(finalList));
-				console.log('##parentObject--> '+JSON.stringify(parentObject));
+				//console.log('##FINALLLLLLLObjects--> '+JSON.stringify(finalList));
+				//console.log('##parentObject--> '+JSON.stringify(parentObject));
 				for(var p in parentObject){
 					if(parentObject[p].isCustom == true){
 						for(var c in finalList){
@@ -449,9 +530,10 @@ $(document).on('click','.NPS-BoxHandler',function(){
 									namespacePrefix : parentObject[p].namespacePrefix,
 									id : finalList[c].Id,
 									isCustom: true,
-									url : 'https://'+window.location.host+'/'+finalList[c].Id
+									isCustomSetting : parentObject[p].isCustomSetting,
+									url : 'https://'+window.location.host+'/'+finalList[c].Id									
 								}
-								console.log('Obj:--> '+obj);
+								//console.log('Obj:--> '+obj);
 								FinalObjectMetaDataList.push(obj);
 							}
 						}
@@ -463,12 +545,16 @@ $(document).on('click','.NPS-BoxHandler',function(){
 							namespacePrefix : parentObject[p].namespacePrefix,
 							id : parentObject[p].name,
 							isCustom: false,
+							isCustomSetting : parentObject[p].isCustomSetting,
 							url : 'https://'+window.location.host+'/ui/setup/Setup?setupid='+parentObject[p].name
 						}
 						FinalObjectMetaDataList.push(obj);
 					}
 				}
-				console.log('###finalObjects--> '+JSON.stringify(FinalObjectMetaDataList));
+			
+				
+				//console.log('###CustomSettingObj--> '+JSON.stringify(myCustomSettingObj));
+				//console.log('###finalObjects--> '+JSON.stringify(FinalObjectMetaDataList));
 				localStorage.setItem(orgId+'_sObjectDate', currentDate);
 				localStorage.setItem(orgId+'_sObjectInfo', JSON.stringify(FinalObjectMetaDataList));
 				
@@ -503,74 +589,132 @@ $(document).on('click','.NPS-BoxHandler',function(){
 				}
 			}
 			if(G_PkgFilter == 'none'){
-				displayData = '<select data-placeholder="Search for '+G_SearchForLabel[G_SearchFor]+'" id="resultSelectList">';
-				displayData += '<option></option>';
-				displayData += '<optgroup label="Standard">';
-				for(var rec in getsObjectMetadata){
-					if(getsObjectMetadata[rec].namespacePrefix == null && getsObjectMetadata[rec].isCustom == false){
-						if(G_SearchBy == 'LABEL'){
-							displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
-						}
-						else if (G_SearchBy == 'APINAME'){
-							displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
-						}
-					}
-				}
-				displayData += '</optgroup>';
-				displayData += '<optgroup label="Custom">';
-				for(var rec in getsObjectMetadata){
-					if(getsObjectMetadata[rec].namespacePrefix == null && getsObjectMetadata[rec].isCustom == true){
-						if(G_SearchBy == 'LABEL'){
-							displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
-						}
-						else if (G_SearchBy == 'APINAME'){
-							displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
-						}
-					}
-				}
-				displayData += '</optgroup>';	
-				for(var pk in prefixArry){
-					var optData = '<optgroup label="'+prefixArry[pk]+'">';
-					var chk = 0;
+				if(G_SearchFor == 'CustomSetting'){
+					displayData = '<select data-placeholder="Search for '+G_SearchForLabel[G_SearchFor]+'" id="resultSelectList">';
+					displayData += '<option></option>';
+					displayData += '<optgroup label="Custom">';
 					for(var rec in getsObjectMetadata){
-						if(getsObjectMetadata[rec].namespacePrefix == prefixArry[pk]){
+						if(getsObjectMetadata[rec].namespacePrefix == null && getsObjectMetadata[rec].isCustom == true && getsObjectMetadata[rec].isCustomSetting == true){
 							if(G_SearchBy == 'LABEL'){
-								optData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
+								displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
 							}
 							else if (G_SearchBy == 'APINAME'){
-								optData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
+								displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
 							}
-							chk += 1;
-						}						
+						}
 					}
-					optData += '</optgroup>';
-					if(chk > 0){
-						displayData += optData;
+					displayData += '</optgroup>';	
+					for(var pk in prefixArry){
+						var optData = '<optgroup label="'+prefixArry[pk]+'">';
+						var chk = 0;
+						for(var rec in getsObjectMetadata){
+							if(getsObjectMetadata[rec].namespacePrefix == prefixArry[pk] && getsObjectMetadata[rec].isCustomSetting == true){
+								if(G_SearchBy == 'LABEL'){
+									optData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
+								}
+								else if (G_SearchBy == 'APINAME'){
+									optData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
+								}
+								chk += 1;
+							}						
+						}
+						optData += '</optgroup>';
+						if(chk > 0){
+							displayData += optData;
+						}
 					}
+					displayData += '</select>';
 				}
-				displayData += '</select>';				
+				else{
+					displayData = '<select data-placeholder="Search for '+G_SearchForLabel[G_SearchFor]+'" id="resultSelectList">';
+					displayData += '<option></option>';
+					displayData += '<optgroup label="Standard">';
+					for(var rec in getsObjectMetadata){
+						if(getsObjectMetadata[rec].namespacePrefix == null && getsObjectMetadata[rec].isCustom == false && getsObjectMetadata[rec].isCustomSetting == false){
+							if(G_SearchBy == 'LABEL'){
+								displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
+							}
+							else if (G_SearchBy == 'APINAME'){
+								displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
+							}
+						}
+					}
+					displayData += '</optgroup>';
+					displayData += '<optgroup label="Custom">';
+					for(var rec in getsObjectMetadata){
+						if(getsObjectMetadata[rec].namespacePrefix == null && getsObjectMetadata[rec].isCustom == true && getsObjectMetadata[rec].isCustomSetting == false){
+							if(G_SearchBy == 'LABEL'){
+								displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
+							}
+							else if (G_SearchBy == 'APINAME'){
+								displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
+							}
+						}
+					}
+					displayData += '</optgroup>';	
+					for(var pk in prefixArry){
+						var optData = '<optgroup label="'+prefixArry[pk]+'">';
+						var chk = 0;
+						for(var rec in getsObjectMetadata){
+							if(getsObjectMetadata[rec].namespacePrefix == prefixArry[pk] && getsObjectMetadata[rec].isCustomSetting == false){
+								if(G_SearchBy == 'LABEL'){
+									optData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
+								}
+								else if (G_SearchBy == 'APINAME'){
+									optData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
+								}
+								chk += 1;
+							}						
+						}
+						optData += '</optgroup>';
+						if(chk > 0){
+							displayData += optData;
+						}
+					}
+					displayData += '</select>';	
+				}// End of Else
 			}
 			else{
-				displayData = '<select data-placeholder="Search for '+G_SearchForLabel[G_SearchFor]+'" id="resultSelectList">';
-				displayData += '<option></option>';				
-				displayData += '<optgroup label="'+G_PkgFilter+'">';					
-				for(var rec in getsObjectMetadata){
-					if(getsObjectMetadata[rec].namespacePrefix == G_PkgFilter){
-						if(G_SearchBy == 'LABEL'){
-							displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
-						}
-						else if (G_SearchBy == 'APINAME'){
-							displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
+				if(G_SearchFor == 'CustomSetting'){
+					displayData = '<select data-placeholder="Search for '+G_SearchForLabel[G_SearchFor]+'" id="resultSelectList">';
+					displayData += '<option></option>';				
+					displayData += '<optgroup label="'+G_PkgFilter+'">';
+					for(var rec in getsObjectMetadata){
+						if(getsObjectMetadata[rec].namespacePrefix == G_PkgFilter && getsObjectMetadata[rec].isCustomSetting == true){
+							if(G_SearchBy == 'LABEL'){
+								displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
+							}
+							else if (G_SearchBy == 'APINAME'){
+								displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
+							}						
 						}						
-					}						
+					}
+					displayData += '</optgroup>';
+					displayData += '</select>';	
 				}
-				displayData += '</optgroup>';
-				displayData += '</select>';				
+				else{
+					displayData = '<select data-placeholder="Search for '+G_SearchForLabel[G_SearchFor]+'" id="resultSelectList">';
+					displayData += '<option></option>';				
+					displayData += '<optgroup label="'+G_PkgFilter+'">';					
+					for(var rec in getsObjectMetadata){
+						if(getsObjectMetadata[rec].namespacePrefix == G_PkgFilter && getsObjectMetadata[rec].isCustomSetting == false){
+							if(G_SearchBy == 'LABEL'){
+								displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].label+'</option>';
+							}
+							else if (G_SearchBy == 'APINAME'){
+								displayData += '<option id="'+getsObjectMetadata[rec].url+'" prefix="'+getsObjectMetadata[rec].namespacePrefix+'" value="'+getsObjectMetadata[rec].url+'">'+getsObjectMetadata[rec].name+'</option>';
+							}						
+						}						
+					}
+					displayData += '</optgroup>';
+					displayData += '</select>';	
+				}				
 			}
 			//console.log('displayData--> '+displayData);
 			$('div#NPS-resultSelectContainer').empty();
 			$('div#NPS-resultSelectContainer').append(displayData);
-			$('div#NPS-resultSelectContainer > #resultSelectList').chosen();
+			//$('div#NPS-resultSelectContainer > #resultSelectList').chosen({search_contains: true});
+			initializeChosenPlugin();
 			$('.NPS-showProgressBar').hide();
 			clearInterval(mysObjectRetrivalCounter);
 		}
@@ -603,21 +747,39 @@ $(document).on('click','.NPS-BoxHandler',function(){
 				
 				displayData = '<select data-placeholder="Search for '+G_SearchForLabel[G_SearchFor]+'" id="resultSelectList">';
 				displayData += '<option></option>';
-				displayData += '<optgroup label="custom">';
-				for(var rec in getMetaDataInfo){
 				
-					//if(getMetaDataInfo[rec].NamespacePrefix == null){
-						if(G_SearchBy == 'LABEL'){
-							var url = 'https://'+window.location.host+'/'+getMetaDataInfo[rec].Id;
-							displayData += '<option id="'+getMetaDataInfo[rec].Id+'" prefix="'+getMetaDataInfo[rec].NamespacePrefix+'" value="'+url+'">'+getMetaDataInfo[rec].Label+'</option>';
-						}
-						else if (G_SearchBy == 'APINAME'){
-							var url = 'https://'+window.location.host+'/'+getMetaDataInfo[rec].Id;
-							displayData += '<option id="'+getMetaDataInfo[rec].Id+'" prefix="'+getMetaDataInfo[rec].NamespacePrefix+'" value="'+url+'">'+getMetaDataInfo[rec].Name+'</option>';
-						}
-					//}
+				if(G_SearchFor == 'User'){
+					displayData += '<optgroup label="Users">';
+					for(var rec in getMetaDataInfo){
+					
+						//if(getMetaDataInfo[rec].NamespacePrefix == null){
+							
+								var url = 'https://'+window.location.host+'/'+getMetaDataInfo[rec].Id;
+								displayData += '<option id="'+getMetaDataInfo[rec].Id+'" prefix="'+getMetaDataInfo[rec].NamespacePrefix+'" value="'+url+'">'+getMetaDataInfo[rec].Name+'</option>';
+							
+							
+						//}
+					}
+					displayData += '</optgroup>';
 				}
-				displayData += '</optgroup>';
+				else{
+					displayData += '<optgroup label="custom">';
+					for(var rec in getMetaDataInfo){
+					
+						//if(getMetaDataInfo[rec].NamespacePrefix == null){
+							if(G_SearchBy == 'LABEL'){
+								var url = 'https://'+window.location.host+'/'+getMetaDataInfo[rec].Id;
+								displayData += '<option id="'+getMetaDataInfo[rec].Id+'" prefix="'+getMetaDataInfo[rec].NamespacePrefix+'" value="'+url+'">'+getMetaDataInfo[rec].Label+'</option>';
+							}
+							else if (G_SearchBy == 'APINAME'){
+								var url = 'https://'+window.location.host+'/'+getMetaDataInfo[rec].Id;
+								displayData += '<option id="'+getMetaDataInfo[rec].Id+'" prefix="'+getMetaDataInfo[rec].NamespacePrefix+'" value="'+url+'">'+getMetaDataInfo[rec].Name+'</option>';
+							}
+						//}
+					}
+					displayData += '</optgroup>';
+				}
+				
 				/*for(var pk in prefixArry){
 					var optData = '<optgroup label="'+prefixArry[pk]+'">';
 					var chk = 0;
@@ -642,20 +804,33 @@ $(document).on('click','.NPS-BoxHandler',function(){
 			else{
 				displayData = '<select data-placeholder="Search for '+G_SearchForLabel[G_SearchFor]+'" id="resultSelectList">';
 				displayData += '<option></option>';
-				displayData += '<optgroup label="'+G_PkgFilter+'">';
-				for(var rec in getMetaDataInfo){
-					//if(getMetaDataInfo[rec].NamespacePrefix == null){
-						if(G_SearchBy == 'LABEL'){
-							var url = 'https://'+window.location.host+'/'+getMetaDataInfo[rec].Id;
-							displayData += '<option id="'+getMetaDataInfo[rec].Id+'" prefix="'+getMetaDataInfo[rec].NamespacePrefix+'" value="'+url+'">'+getMetaDataInfo[rec].Label+'</option>';
-						}
-						else if (G_SearchBy == 'APINAME'){
+				if(G_SearchFor == 'User'){
+					displayData += '<optgroup label="Users">';
+					for(var rec in getMetaDataInfo){
+						//if(getMetaDataInfo[rec].NamespacePrefix == null){
 							var url = 'https://'+window.location.host+'/'+getMetaDataInfo[rec].Id;
 							displayData += '<option id="'+getMetaDataInfo[rec].Id+'" prefix="'+getMetaDataInfo[rec].NamespacePrefix+'" value="'+url+'">'+getMetaDataInfo[rec].Name+'</option>';
-						}
-					//}
+							
+						//}
+					}
+					displayData += '</optgroup>';
 				}
-				displayData += '</optgroup>';
+				else{
+					displayData += '<optgroup label="'+G_PkgFilter+'">';
+					for(var rec in getMetaDataInfo){
+						//if(getMetaDataInfo[rec].NamespacePrefix == null){
+							if(G_SearchBy == 'LABEL'){
+								var url = 'https://'+window.location.host+'/'+getMetaDataInfo[rec].Id;
+								displayData += '<option id="'+getMetaDataInfo[rec].Id+'" prefix="'+getMetaDataInfo[rec].NamespacePrefix+'" value="'+url+'">'+getMetaDataInfo[rec].Label+'</option>';
+							}
+							else if (G_SearchBy == 'APINAME'){
+								var url = 'https://'+window.location.host+'/'+getMetaDataInfo[rec].Id;
+								displayData += '<option id="'+getMetaDataInfo[rec].Id+'" prefix="'+getMetaDataInfo[rec].NamespacePrefix+'" value="'+url+'">'+getMetaDataInfo[rec].Name+'</option>';
+							}
+						//}
+					}
+					displayData += '</optgroup>';
+				}
 				displayData += '</select>';
 			}
 				
@@ -664,8 +839,8 @@ $(document).on('click','.NPS-BoxHandler',function(){
 			$('div#NPS-resultSelectContainer').append(displayData);
 			//clearInterval(myMetadataCounter);	
 			$('.NPS-showProgressBar').hide();
-			$('div#NPS-resultSelectContainer > #resultSelectList').chosen();
-			
+			//$('div#NPS-resultSelectContainer > #resultSelectList').chosen({search_contains: true});
+			initializeChosenPlugin();
 		}
 		else{
 			displayData = '<select data-placeholder="No Data Found for '+G_SearchForLabel[G_SearchFor]+'" id="resultSelectList">';
@@ -674,7 +849,8 @@ $(document).on('click','.NPS-BoxHandler',function(){
 			$('div#NPS-resultSelectContainer').empty();
 			$('div#NPS-resultSelectContainer').append(displayData);
 			$('.NPS-showProgressBar').hide();
-			$('div#NPS-resultSelectContainer > #resultSelectList').chosen();
+			//$('div#NPS-resultSelectContainer > #resultSelectList').chosen({search_contains: true});
+			initializeChosenPlugin();
 		}
 		
 		//console.log('count--> '+count);
@@ -711,7 +887,7 @@ $(document).on('click','.NPS-BoxHandler',function(){
 	var queryURL;
 	G_ErrorOccured = false;
 	//if (localStorage.getItem(orgId+'_'+metadataType+'Date') != currentDate){
-		if(metadataType != 'ApexPage' && metadataType != 'ApexComponent'){
+		if(metadataType != 'ApexPage' && metadataType != 'ApexComponent' && metadataType != 'User'){
 			var param;
 			var continueLooping = true;
 			if(param==undefined || param==''){
@@ -759,6 +935,55 @@ $(document).on('click','.NPS-BoxHandler',function(){
 				alert('Error!! Unable to fetch data from your salesforce instance' + JSON.stringify(error));
 				continueLooping = false;
 			});	
+		}
+		else if (metadataType == 'User'){
+			var param;
+			var continueLooping = true;
+			if(param==undefined || param==''){
+				if(prefixString != 'none'){
+					queryURL = "/services/data/v30.0/query/?q=SELECT+Id,Name,Username+from+"+metadataType;	
+				}
+				else{
+					queryURL = "/services/data/v30.0/query/?q=SELECT+Id,Name,Username+from+"+metadataType;
+				}
+			}else{
+				queryURL = param;
+			}
+			//console.log('####queryURL '+ queryURL);
+			$.ajax({
+				url : "https://"+currentDomain+queryURL,
+				async: false,
+				headers : {"Authorization": "Bearer "+ sessionCookie},
+				contentType : "application/json"
+			}).done(function(response){
+				//console.log('PRIMARY DATA--> '+JSON.stringify(response));
+				for(var i in response.records){
+					//if(response.records[i].NamespacePrefix != 'sf_com_apps' && response.records[i].NamespacePrefix != 'sf_chttr_apps'){
+						var obj = {
+							Name: response.records[i].Name,
+							Id : response.records[i].Id,
+							NamespacePrefix : null,
+							Label : null
+						};
+						finalList.push(obj);
+					//}
+				}				
+				//console.log('##'+metadataType+' '+JSON.stringify(finalList));
+				
+				localStorage.removeItem(orgId+'_'+metadataType+'Info');
+				//localStorage.setItem(orgId+'_'+metadataType+'Date', currentDate);
+				localStorage.setItem(orgId+'_'+metadataType+'Info', JSON.stringify(finalList));		
+				
+				displayData = finalList;
+				
+				if(response.nextRecordsUrl){
+					param = response.nextRecordsUrl;
+				}
+				
+			}).fail(function(error){				
+				alert('Error!! Unable to fetch data from your salesforce instance' + JSON.stringify(error));
+				continueLooping = false;
+			});
 		}
 		else{
 			var param;
