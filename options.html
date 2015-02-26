@@ -1,7 +1,7 @@
 <!--
 /* 
 	## ----   SF Quick Metadata Lookup   ---- ##
-	version : 1.1
+	version : 1.3
 	Developed By : N.P.SINGH
 	
 	Copyright (c) 2015 N.P.SINGH
@@ -100,7 +100,7 @@
 				<div class="col-md-12 col-sm-12 col-xs-12">
 					<div class="headerSection">
 						<div style="float:left;width:100px;"><img src="images/SF_Icon.png" title="SF Quick Metadata Lookup" width="50%"/></div>
-						<div class="myOwnHeadertext">SF Quick Metadata Lookup<small style="margin-left:15px; font-size:45%; vertical-align:bottom;">Version 1.1</small></div>
+						<div class="myOwnHeadertext">SF Quick Metadata Lookup<small style="margin-left:15px; font-size:45%; vertical-align:bottom;">Version 1.3</small></div>
 					</div>
 				</div>
 				<div class="col-md-12 col-sm-12 col-xs-12" style="border-top: #DDD 1px solid;">
@@ -125,12 +125,21 @@
 										</div>
 									</fieldset>
 									<fieldset class="myOwnStyle">
+										<legend class="myOwnLegend">Searching Criteria Configuration</legend>
+											<div class="form-inline myOwn">
+												<input type="radio" name="SerachCriteriaRadio" value="CONTAINS" id="CONTAINS" checked/>
+												<label for="CONTAINS">Contains</label>
+												<input type="radio" name="SerachCriteriaRadio" value="STARTWITH" id="STARTWITH" />
+												<label for="STARTWITH">Start With</label>
+											</div>
+									</fieldset>
+									<fieldset class="myOwnStyle">
 										<legend class="myOwnLegend">Data Refresh Rate Configuration</legend>
 											<div class="form-inline myOwn">
-												<input type="radio" name="refreshRateRadio" value="DAILY" id="DAILY"/>
-												<label for="DAILY">Daily Basis</label>
 												<input type="radio" name="refreshRateRadio" value="HOURLY" id="HOURLY" checked/>
 												<label for="HOURLY">Hourly Basis</label>
+												<input type="radio" name="refreshRateRadio" value="DAILY" id="DAILY"/>
+												<label for="DAILY">Daily Basis</label>												
 											</div>
 									</fieldset>
 									<div style="padding-left:45%;margin-top:20px;">
@@ -147,7 +156,7 @@
 										</div>
 										<div class="contentBody" style="margin-top:20px;">
 											<div class="collapse" id="collapseAbout">
-												<pre><b>Description:</b> SF Quick Metadata Lookup is an Advanced Metadata Searching Tool, you can search all your metadata(managed/unmanaged) in quick manner.<br/><br/><b>Version:</b> 1.1<br/><br/><b>Developed by: </b>N.P.SINGH<br/><br/><b>SF Usage API:</b> Force.com Tooling API, SF SOAP Metadata API</pre>							
+												<pre><b>Description:</b> SF Quick Metadata Lookup is an Advanced Metadata Searching Tool, you can search all your metadata(managed/unmanaged) in quick manner.<br/><br/><b>Version:</b> 1.3<br/><br/><b>Developed by: </b>N.P.SINGH<br/><br/><b>SF Usage API:</b> Force.com Tooling API, SF SOAP Metadata API<br/><br/><b>For Source code Visit:</b> <a href="https://github.com/NPSINGH/SF-Quick-Metadata-Lookup.git" tittle="Visit for Source Code">https://github.com/NPSINGH/SF-Quick-Metadata-Lookup.git</a></pre>							
 											</div>
 											<div class="collapse" id="collapseLicense">
 												<pre>Under MIT License <br/>Copyright &copy; 2015 N.P.SINGH<br/><br/>All third party JS framework licenses under their respective owner/party</pre>							
