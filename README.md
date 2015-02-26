@@ -28,7 +28,7 @@ SF Quick Metadata Lookup is an Advanced Metadata Searching Tool, you can search 
 
 ========================================================
 ###Refined version 1.3    |          Modified Date: Feb 26, 2015
-========================================================
+
 Following issues/improvments has been implemented in this version:
 
 **Enhancements**
@@ -46,10 +46,9 @@ Following issues/improvments has been implemented in this version:
 * validated/handled the exception when user session is timed-out.
 * Code optimized for debugging level.
 
-
 ========================================================
 ####Refined version 1.2    |          Modified Date: Feb 10, 2015
-========================================================
+
 Following issues/improvments has been implemented in this version:
 
 * Default visibility issue has been fixed.
@@ -59,7 +58,7 @@ Following issues/improvments has been implemented in this version:
 
 ========================================================
 ####Released version 1.1  |            Release Date :  Jan 2015
-========================================================
+
 
 Initialliy comes with following features and functionality:
 
