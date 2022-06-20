@@ -1,6 +1,5 @@
 # SF Quick MetaData Lookup
 Latest Version: 1.3
-Copyright (c) N.P.SINGH 2015 | Under MIT License
 
 ##Get the Extension from Chrome:
 https://chrome.google.com/webstore/detail/sf-quick-metadata-lookup/mokggpplcgmpaoijfndagjbgfkibbcke?hl=en-US&gl=IN
